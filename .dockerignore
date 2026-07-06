@@ -1,0 +1,8 @@
+bin/
+obj/
+.git/
+.vs/
+.vscode/
+.claude/
+*.png
+_design_latest.html
