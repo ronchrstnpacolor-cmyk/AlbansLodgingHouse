@@ -1,0 +1,478 @@
+@page
+@model AlbansLodgingHouse.Pages.IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<nav class="site-nav" id="site-nav">
+    <a href="#home" class="brand">
+        <span class="brand-mark">ALBAN'S</span>
+        <span class="brand-name">Lodging House</span>
+    </a>
+
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links">
+        <span></span><span></span><span></span>
+    </button>
+
+    <div class="nav-links" id="nav-links">
+        <a href="#home" class="nav-link">Home</a>
+        <a href="#rooms" class="nav-link">Rooms</a>
+        <a href="#gallery" class="nav-link">Gallery</a>
+        <a href="#reviews" class="nav-link">Reviews</a>
+        <a href="#contact" class="nav-link">Visit</a>
+        <a href="#contact" class="nav-cta">Book Now</a>
+    </div>
+</nav>
+
+<section id="home" class="hero reveal">
+    <div class="hero-bg" style="background-image:url('img/exterior.jpg')"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <div class="eyebrow eyebrow-light">Verceles St &middot; Agoo &middot; La Union</div>
+        <h1 class="hero-title">A comfortable, secure stay in the heart of Agoo</h1>
+        <p class="hero-copy">Clean, air-conditioned rooms for business travelers, transients and long-stay guests &mdash; steps from the town center, banks and DMMMSU.</p>
+        <div class="hero-actions">
+            <a href="#rooms" class="btn btn-primary">Book Your Stay</a>
+            <a href="tel:+639298451276" class="btn btn-outline">Call +63 929 845 1276</a>
+        </div>
+        <div class="rating">
+            <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
+            <span class="rating-text">4.2 on Google &middot; 49 reviews</span>
+        </div>
+    </div>
+</section>
+
+<section id="about" class="about reveal">
+    <div class="about-grid">
+        <div class="about-image-wrap">
+            <img src="img/reception.jpg" alt="Front desk" class="about-image" />
+            <div class="about-badge">
+                <div class="about-badge-num">15+</div>
+                <div class="about-badge-label">Years welcoming guests</div>
+            </div>
+        </div>
+        <div class="about-copy">
+            <div class="eyebrow">Welcome</div>
+            <h2 class="section-title">A home away from home in Agoo, La Union</h2>
+            <p class="body-copy">Alban's Lodging House offers clean, affordable rooms for rent &mdash; whether you're staying the night, passing through as a transient, or settling in for the month. We keep it simple, secure and welcoming.</p>
+            <p class="body-copy">Our separate ladies' dormitory comes with individual lockers and keys, and every guest is welcome to use the shared kitchen and the cable-TV living room.</p>
+            <div class="tag-list">
+                <span class="tag">Free Wi-Fi</span>
+                <span class="tag">Air-conditioned rooms</span>
+                <span class="tag">Shared kitchen</span>
+                <span class="tag">Cable TV lounge</span>
+                <span class="tag">Ladies' dormitory</span>
+                <span class="tag">Individual lockers</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="why" class="why reveal">
+    <div class="why-inner">
+        <div class="section-head">
+            <div class="eyebrow">Why Choose Us</div>
+            <h2 class="section-title">A stay that takes care of the details</h2>
+        </div>
+        <div class="why-grid">
+            @foreach (var item in Model.WhyChooseUs)
+            {
+                <div class="why-item">
+                    <div class="why-number">@item.Number</div>
+                    <div>
+                        <h3 class="why-title">@item.Title</h3>
+                        <p class="why-desc">@item.Description</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<section id="card" class="card-section reveal">
+    <div class="card-section-inner">
+        <div class="eyebrow eyebrow-gold">Alban's at a Glance</div>
+        <h2 class="section-title section-title-light">Rooms, ladies' dormitory &amp; contacts</h2>
+        <p class="card-section-copy">Everything on our card &mdash; amenities, the ladies' dormitory features, and every way to reach us.</p>
+
+        <div class="biz-cards">
+            <div class="biz-card">
+                <div class="biz-card-top">
+                    <div class="biz-card-name">ALBAN'S</div>
+                    <div class="biz-card-sub">LODGING HOUSE</div>
+                    <div class="biz-card-tagline">House with unique and interesting<br />decorations, and warm hospitality</div>
+
+                    <div class="biz-card-checks">
+                        <span><span class="biz-card-check-icon">&#10003;</span>Clean</span>
+                        <span><span class="biz-card-check-icon">&#10003;</span>Elegantly Furnished</span>
+                        <span><span class="biz-card-check-icon">&#10003;</span>Cable TV &amp; AC</span>
+                        <span><span class="biz-card-check-icon">&#10003;</span>Breakfast Included</span>
+                    </div>
+                </div>
+
+                <div class="biz-card-divider"></div>
+                <div class="biz-card-badge"><span>WiFi</span><small>FREE</small></div>
+
+                <div class="biz-card-bottom biz-card-bottom-dark">
+                    <div class="biz-card-icon-line">
+                        <svg width="15" height="19" viewBox="0 0 24 30" fill="none" aria-hidden="true"><path d="M12 1C6 1 1.5 5.5 1.5 11.3 1.5 19 12 29 12 29S22.5 19 22.5 11.3C22.5 5.5 18 1 12 1Z" fill="#F0C93A" /></svg>
+                        Verceles Street, Consolacion, Agoo, La Union
+                    </div>
+                    <div class="biz-card-row">
+                        <span>PLDT NO. 72-607-2696</span>
+                        <span class="biz-card-icon-line">
+                            <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true"><rect x="5" y="1" width="12" height="20" rx="2" fill="#F0C93A" /></svg>
+                            Smart 929-845-1276
+                        </span>
+                    </div>
+                    <div class="biz-card-row">
+                        <span class="biz-card-icon-line">
+                            <svg width="15" height="12" viewBox="0 0 26 20" fill="none" aria-hidden="true"><rect x="1.5" y="1.5" width="23" height="17" rx="2" fill="none" stroke="#F0C93A" stroke-width="1.6" /><path d="M2.5 3l10.5 8L23.5 3" stroke="#F0C93A" stroke-width="1.6" fill="none" /></svg>
+                            albanslodginghouse@yahoo.com
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="biz-card biz-card-dorm">
+                <div class="biz-card-name biz-card-name-sm">LADIES DORMITORY</div>
+                <div class="biz-card-tagline biz-card-tagline-plain">Verceles St., Consolacion, Agoo, La Union<br />Very close to DMMSU-SLUC</div>
+
+                <div class="biz-card-ornament"><span></span><i></i><span></span></div>
+                <div class="biz-card-heading">DORMITORY FEATURES</div>
+
+                <div class="biz-card-features">
+                    <div class="biz-card-feature"><span class="biz-card-check-icon">&#10003;</span>Individual lockers with key</div>
+                    <div class="biz-card-feature"><span class="biz-card-check-icon">&#10003;</span>Cable TV in the living room</div>
+                    <div class="biz-card-feature"><span class="biz-card-check-icon">&#10003;</span>Computer room/Copy room</div>
+                    <div class="biz-card-feature"><span class="biz-card-check-icon">&#10003;</span>Grocery Store &amp; Gift Shop</div>
+                </div>
+
+                <div class="biz-card-ornament"><span></span><i></i><span></span></div>
+                <div class="biz-card-bottom biz-card-bottom-center">
+                    <div>Tel: 72-607-2696</div>
+                    <div>Smart: 929-845-1276</div>
+                    <div>Globe: 945-312-5364</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="rooms" class="rooms reveal">
+    <div class="rooms-inner">
+        <div class="section-head">
+            <div class="eyebrow">Accommodations</div>
+            <h2 class="section-title">Rooms &amp; Dormitories</h2>
+            <p class="rooms-subtitle">Room rates from &#8369;1,000 to &#8369;2,500 per night, depending on occupancy &mdash; free breakfast included with every stay.</p>
+        </div>
+
+        <div class="room-filters" id="room-filters">
+            <button class="chip is-active" data-filter="all" type="button">All Rooms</button>
+            <button class="chip" data-filter="private" type="button">Private</button>
+            <button class="chip" data-filter="ladies" type="button">Ladies</button>
+        </div>
+
+        <div class="room-grid">
+            @foreach (var room in Model.Rooms)
+            {
+                <div class="room-card-wrap" data-category="@room.Category">
+                    <article class="room-card">
+                        <div class="room-media">
+                            <img src="@room.Image" alt="@room.Title" loading="lazy" />
+                            <span class="room-badge room-badge-@room.Category">@room.Badge</span>
+                        </div>
+                        <div class="room-body">
+                            <h3 class="room-title">@room.Title</h3>
+                            <p class="room-desc">@room.Description</p>
+                            <div class="room-features">
+                                @for (var i = 0; i < room.Features.Length; i++)
+                                {
+                                    <span>@room.Features[i]</span>
+                                    @if (i < room.Features.Length - 1)
+                                    {
+                                        <span class="dot-sep">&middot;</span>
+                                    }
+                                }
+                            </div>
+                            <div class="room-footer">
+                                <span class="price">@room.Price</span>
+                                <button type="button" class="btn-book" data-room="@room.Title">Book</button>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<section id="features" class="features reveal">
+    <div class="features-inner">
+        <div class="section-head">
+            <div class="eyebrow">What's Included</div>
+            <h2 class="section-title">Features &amp; services</h2>
+        </div>
+        <div class="features-grid">
+            <div>
+                <h3 class="features-col-title">Lodging house features</h3>
+                <ul class="checklist">
+                    @foreach (var item in Model.LodgingHouseFeatures)
+                    {
+                        <li><span class="checklist-icon">&#10003;</span>@item.Text</li>
+                    }
+                </ul>
+            </div>
+            <div>
+                <h3 class="features-col-title">Guest services</h3>
+                <ul class="checklist">
+                    @foreach (var item in Model.GuestServices)
+                    {
+                        <li><span class="checklist-icon">&#10003;</span>@item.Text</li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="gallery" class="gallery reveal">
+    <div class="section-head">
+        <div class="eyebrow">A Look Inside</div>
+        <h2 class="section-title">Gallery</h2>
+    </div>
+    <div class="gallery-grid" id="gallery-grid">
+        @for (var i = 0; i < Model.Gallery.Count; i++)
+        {
+            var g = Model.Gallery[i];
+            <button type="button" class="gallery-item" data-index="@i">
+                <img src="@g.Src" alt="@g.Caption" loading="lazy" />
+                <span class="gallery-caption">@g.Caption</span>
+            </button>
+        }
+    </div>
+</section>
+
+<section id="breakfast" class="breakfast reveal">
+    <div class="breakfast-inner">
+        <div class="section-head">
+            <div class="eyebrow">Complimentary Breakfast</div>
+            <h2 class="section-title">Guest free breakfast</h2>
+            <p class="breakfast-subtitle">Included with your stay &middot; served daily 6:00 &ndash; 10:00 AM &middot; good for one person</p>
+        </div>
+        <div class="breakfast-grid">
+            @foreach (var item in Model.BreakfastMenu)
+            {
+                <div class="breakfast-item">
+                    <div class="breakfast-item-title">@item.Title</div>
+                    <div class="breakfast-item-subtitle">@item.Subtitle</div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<section id="offers" class="offers reveal">
+    <div class="offers-inner">
+        <div class="section-head">
+            <div class="eyebrow">Discounts &amp; Promotions</div>
+            <h2 class="section-title">Ways to save on your stay</h2>
+        </div>
+        <div class="offers-grid">
+            @foreach (var offer in Model.Offers)
+            {
+                <div class="offer-tile">
+                    <div class="offer-percent">@offer.Percent</div>
+                    <div class="offer-desc">@offer.Description</div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<section id="reviews" class="reviews reveal">
+    <div class="reviews-inner">
+        <div class="eyebrow eyebrow-gold">Guest Reviews</div>
+        <h2 class="section-title section-title-light">What our guests say</h2>
+        <div class="rating rating-center">
+            <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
+            <span class="rating-text rating-text-light">4.2 &middot; 49 Google reviews</span>
+        </div>
+
+        <div class="testimonial-stage" id="testimonial-stage">
+            @for (var i = 0; i < Model.Testimonials.Count; i++)
+            {
+                var t = Model.Testimonials[i];
+                <div class="testimonial @(i == 0 ? "is-active" : "")" data-index="@i">
+                    <p class="testimonial-quote">&ldquo;@t.Quote&rdquo;</p>
+                    <div class="testimonial-author">@t.Author</div>
+                </div>
+            }
+        </div>
+
+        <div class="dots" id="testimonial-dots">
+            @for (var i = 0; i < Model.Testimonials.Count; i++)
+            {
+                <button type="button" class="dot @(i == 0 ? "is-active" : "")" data-index="@i" aria-label="Show testimonial @(i + 1)"></button>
+            }
+        </div>
+    </div>
+</section>
+
+<section id="location" class="location reveal">
+    <div class="location-inner">
+        <div class="location-grid">
+            <div>
+                <div class="eyebrow">In the Heart of Agoo</div>
+                <h2 class="location-title">Walking distance to everything</h2>
+                <p class="body-copy">Alban's Lodging House sits in the center of Agoo, an easy walk from the town's key establishments:</p>
+                <ul class="checklist checklist-arrow">
+                    @foreach (var item in Model.NearbyLandmarks)
+                    {
+                        <li><span class="checklist-icon checklist-icon-arrow">&#8594;</span>@item.Text</li>
+                    }
+                </ul>
+            </div>
+            <div>
+                <div class="eyebrow">Things to Do</div>
+                <h2 class="location-title">Activities nearby</h2>
+                <p class="body-copy">Visit Kultura Splash World or Pugad Adventure, or head to the beach just 15 minutes away. Dine nearby at Jollibee, Chow King, Iceland, Greenwich, Mang Inasal and Taiho.</p>
+                <p class="body-copy">Alban's is a 30-minute drive to San Fernando, 45 minutes to Dagupan City, and about an hour to Baguio City.</p>
+                <div class="seminar-callout">
+                    <div class="seminar-callout-title">Hosting a seminar?</div>
+                    <div class="seminar-callout-desc">We have 15 rooms that can accommodate 40 to 50 persons.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="contact" class="contact reveal">
+    <div class="contact-inner">
+        <div class="section-head">
+            <div class="eyebrow">Reserve &amp; Visit</div>
+            <h2 class="section-title">Book your stay</h2>
+        </div>
+
+        <div class="contact-grid">
+            <div class="reservation-card">
+                <form id="reservation-form" asp-page-handler="Reservation" method="post" novalidate>
+                    <div id="reservation-form-fields">
+                        <h3 class="form-title">Request a reservation</h3>
+                        <p class="form-subtitle">Send us your details and we'll confirm availability and the rate by call or text.</p>
+
+                        <div class="form-row">
+                            <label class="field">Full name
+                                <input asp-for="Reservation.Name" type="text" required autocomplete="name" />
+                            </label>
+                            <label class="field">Phone
+                                <input asp-for="Reservation.Phone" type="tel" autocomplete="tel" />
+                            </label>
+                        </div>
+
+                        <label class="field field-full">Email
+                            <input asp-for="Reservation.Email" type="email" autocomplete="email" />
+                        </label>
+
+                        <div class="form-row">
+                            <label class="field">Check-in
+                                <input asp-for="Reservation.CheckIn" type="date" />
+                            </label>
+                            <label class="field">Check-out
+                                <input asp-for="Reservation.CheckOut" type="date" />
+                            </label>
+                        </div>
+
+                        <div class="form-row form-row-uneven">
+                            <label class="field">Room type
+                                <select asp-for="Reservation.Room" id="room-select">
+                                    <option value="">Select&hellip;</option>
+                                    @foreach (var room in Model.Rooms)
+                                    {
+                                        <option value="@room.Title">@room.Title</option>
+                                    }
+                                </select>
+                            </label>
+                            <label class="field">Guests
+                                <input asp-for="Reservation.Guests" type="number" min="1" max="20" />
+                            </label>
+                        </div>
+
+                        <label class="field field-full">Message
+                            <textarea asp-for="Reservation.Message" rows="3"></textarea>
+                        </label>
+
+                        <div class="form-error" id="form-error" hidden></div>
+
+                        <button type="submit" class="btn-submit" id="form-submit">
+                            <span class="btn-submit-label">Send Reservation Request</span>
+                            <span class="btn-submit-spinner" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                </form>
+                <div class="thank-you" id="thank-you" hidden>
+                    <div class="thank-you-icon">&#10003;</div>
+                    <h3 class="thank-you-title">Thank you &mdash; request received</h3>
+                    <p class="thank-you-copy" id="thank-you-message">We'll confirm your stay shortly. For a faster reply, call or text us at <a href="tel:+639298451276">+63 929 845 1276</a>.</p>
+                </div>
+            </div>
+
+            <div class="contact-details">
+                <div class="info-list">
+                    <div class="info-item">
+                        <div class="info-label">Address</div>
+                        <div class="info-value">Verceles Street, Consolacion,<br />Agoo, 2504, La Union, Philippines</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Reservations</div>
+                        <div class="reservation-contacts">
+                            @foreach (var contact in Model.ReservationContacts)
+                            {
+                                <div class="reservation-contact-row">
+                                    <span class="reservation-contact-carrier">@contact.Carrier</span>
+                                    <a href="@contact.TelHref" class="info-link">@contact.Number</a>
+                                </div>
+                            }
+                            <a href="mailto:albanslodginghouse@yahoo.com" class="reservation-email">albanslodginghouse@yahoo.com</a>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Front Desk Hours</div>
+                        <div class="info-value">Open daily &middot; 7:00 AM &ndash; 10:00 PM<br /><span class="info-note">Check-in from 2:00 PM &middot; Check-out by 12:00 NN</span></div>
+                    </div>
+                </div>
+                <div class="map-frame">
+                    <iframe title="Map to Alban's Lodging House" src="https://www.google.com/maps?q=Albans%20Lodging%20House%2C%20Verceles%20Street%2C%20Agoo%2C%20La%20Union&output=embed" loading="lazy"></iframe>
+                </div>
+                <a href="https://maps.app.goo.gl/2XVPepqGwUsTBSXU9" target="_blank" rel="noopener" class="directions-link">Get Directions &rarr;</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">
+            <div class="brand-mark">ALBAN'S</div>
+            <div class="brand-name">Lodging House</div>
+        </div>
+        <div class="footer-links">
+            <a href="#rooms">Rooms</a>
+            <a href="#gallery">Gallery</a>
+            <a href="#reviews">Reviews</a>
+            <a href="#contact">Visit</a>
+        </div>
+        <div class="footer-phone">+63 929 845 1276</div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 Alban's Lodging House &middot; Verceles Street, Agoo, La Union</div>
+</footer>
+
+<div class="lightbox" id="lightbox">
+    <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Close">&times;</button>
+    <button type="button" class="lightbox-prev" id="lightbox-prev" aria-label="Previous image">&lsaquo;</button>
+    <button type="button" class="lightbox-next" id="lightbox-next" aria-label="Next image">&rsaquo;</button>
+    <div class="lightbox-figure">
+        <img id="lightbox-image" src="" alt="" />
+        <div class="lightbox-caption" id="lightbox-caption"></div>
+    </div>
+</div>
