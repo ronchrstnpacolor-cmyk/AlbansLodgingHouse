@@ -5,6 +5,7 @@
     initNav();
     initReveal();
     initRoomFilters();
+    initRoomMediaCarousels();
     initGallery();
     initTestimonials();
     initReservationForm();
@@ -100,6 +101,38 @@
         if (contact) {
           contact.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+      });
+    });
+  }
+
+  // ---------- room card photo carousel ----------
+
+  function initRoomMediaCarousels() {
+    document.querySelectorAll('.room-media[data-images]').forEach((media) => {
+      let images;
+      try {
+        images = JSON.parse(media.dataset.images);
+      } catch {
+        return;
+      }
+      if (!Array.isArray(images) || images.length < 2) return;
+
+      const img = media.querySelector('.room-media-img');
+      const prevBtn = media.querySelector('.room-media-prev');
+      const nextBtn = media.querySelector('.room-media-next');
+      const dots = Array.from(media.querySelectorAll('.room-media-dot'));
+      let index = 0;
+
+      const show = (i) => {
+        index = (i + images.length) % images.length;
+        img.setAttribute('src', images[index]);
+        dots.forEach((dot, idx) => dot.classList.toggle('is-active', idx === index));
+      };
+
+      prevBtn?.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); show(index - 1); });
+      nextBtn?.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); show(index + 1); });
+      dots.forEach((dot, i) => {
+        dot.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); show(i); });
       });
     });
   }
@@ -207,11 +240,32 @@
 
   function initReservationForm() {
     const form = document.getElementById('reservation-form');
-    const fields = document.getElementById('reservation-form-fields');
-    const thankYou = document.getElementById('thank-you');
+    const modal = document.getElementById('booking-modal');
+    const closeBtn = document.getElementById('booking-modal-close');
+    const okBtn = document.getElementById('booking-modal-ok');
     const errorBox = document.getElementById('form-error');
     const submitBtn = document.getElementById('form-submit');
     if (!form) return;
+
+    function openModal() {
+      modal.classList.add('is-open');
+    }
+
+    function closeModal() {
+      modal.classList.remove('is-open');
+    }
+
+    if (modal) {
+      closeBtn?.addEventListener('click', closeModal);
+      okBtn?.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+      document.addEventListener('keydown', (e) => {
+        if (!modal.classList.contains('is-open')) return;
+        if (e.key === 'Escape') closeModal();
+      });
+    }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -233,10 +287,9 @@
         const data = await response.json().catch(() => null);
 
         if (response.ok && data && data.ok) {
-          const message = document.getElementById('thank-you-message');
-          fields.hidden = true;
-          thankYou.hidden = false;
-          thankYou.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          populateBookingSummary(data);
+          openModal();
+          form.reset();
         } else if (data && data.errors) {
           showErrors(data.errors);
         } else {
@@ -251,6 +304,21 @@
         submitBtn.classList.remove('is-loading');
       }
     });
+
+    function populateBookingSummary(data) {
+      const qr = document.getElementById('thank-you-qr');
+      const download = document.getElementById('booking-modal-download');
+      if (!qr || !data.bookingReferenceNo) return;
+
+      qr.src = data.qrCodeDataUri;
+      if (download && data.newId) download.href = `/Booking/Card/${data.newId}`;
+      document.getElementById('summary-ref').textContent = data.bookingReferenceNo;
+      document.getElementById('summary-name').textContent = data.fullName || '-';
+      document.getElementById('summary-checkin').textContent = data.checkIn || '-';
+      document.getElementById('summary-checkout').textContent = data.checkOut || '-';
+      document.getElementById('summary-room').textContent = data.roomType || '-';
+      document.getElementById('summary-pax').textContent = data.pax ?? '-';
+    }
 
     function showErrors(errors) {
       const messages = [];

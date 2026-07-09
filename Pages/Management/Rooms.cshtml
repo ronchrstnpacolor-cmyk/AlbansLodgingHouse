@@ -1,0 +1,265 @@
+@page
+@model AlbansLodgingHouse.Pages.Management.RoomsModel
+@{
+    ViewData["Title"] = "Rooms";
+}
+
+<div class="mgmt-page">
+    <header class="mgmt-header mgmt-header-row">
+        <div>
+            <h1>Rooms</h1>
+            <p>Maintain room types, rates, capacity and availability.</p>
+        </div>
+        <button type="button" class="mgmt-btn mgmt-btn-approve" id="open-add-room">+ Add Room Type</button>
+    </header>
+
+    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+    {
+        <div class="mgmt-alert @(Model.StatusIsError ? "mgmt-alert-error" : "mgmt-alert-success")">
+            @Model.StatusMessage
+        </div>
+    }
+
+    @if (Model.RoomTypes.Count == 0)
+    {
+        <p class="mgmt-empty">No room types added yet.</p>
+    }
+    else
+    {
+        <div class="mgmt-room-grid">
+            @foreach (var room in Model.RoomTypes)
+            {
+                <div class="mgmt-room-card @(room.IsActive ? "" : "mgmt-room-card-inactive")">
+                    <div class="mgmt-room-card-top">
+                        <span class="mgmt-room-card-status @(room.IsActive ? "mgmt-room-card-status-active" : "mgmt-room-card-status-inactive")">
+                            @(room.IsActive ? "Active" : "Inactive")
+                        </span>
+                        <h3 class="mgmt-room-card-title">@room.RoomTypeName</h3>
+                        <div class="mgmt-room-card-rate">&#8369;@room.PriceRate.ToString("N2") <span>/ @room.Term</span></div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(room.Description))
+                    {
+                        <p class="mgmt-room-card-desc">@room.Description</p>
+                    }
+                    @{
+                        var images = Model.ImagesFor(room.NewID);
+                    }
+                    <div class="mgmt-room-photos">
+                        @if (images.Count > 0)
+                        {
+                            <div class="mgmt-room-photo-strip">
+                                @foreach (var image in images)
+                                {
+                                    <div class="mgmt-room-photo">
+                                        <img src="@image.ImagePath" alt="Room photo" loading="lazy" />
+                                        <form method="post" asp-page-handler="DeleteImage" class="mgmt-room-photo-remove-form">
+                                            <input type="hidden" name="imageId" value="@image.NewID" />
+                                            <button type="submit" class="mgmt-room-photo-remove" aria-label="Remove photo" title="Remove photo">&times;</button>
+                                        </form>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        @if (images.Count < Model.MaxPhotosPerRoomType)
+                        {
+                            <form method="post" asp-page-handler="UploadPhotos" enctype="multipart/form-data" class="mgmt-room-photo-upload-form">
+                                <input type="hidden" name="roomTypeId" value="@room.NewID" />
+                                <label class="mgmt-room-photo-upload-label">
+                                    <input type="file" name="photos" multiple accept="image/jpeg,image/png,image/webp" class="mgmt-room-photo-upload-input" onchange="this.form.requestSubmit()" />
+                                    + Add photo (@images.Count/@Model.MaxPhotosPerRoomType)
+                                </label>
+                            </form>
+                        }
+                    </div>
+                    <dl class="mgmt-room-card-details">
+                        <div><dt>Beds</dt><dd>@room.Beds</dd></div>
+                        <div><dt>Pax</dt><dd>@room.Pax</dd></div>
+                        <div><dt>Rooms Available</dt><dd>@room.RoomsAvailable</dd></div>
+                        <div><dt>Date Available</dt><dd>@(room.DateAvailable?.ToString("yyyy-MM-dd") ?? "-")</dd></div>
+                        <div><dt>Discount</dt><dd>@(room.Discount > 0 ? $"{room.Discount:N0}%" : "-")</dd></div>
+                    </dl>
+                    <div class="mgmt-room-card-meta">
+                        Added @room.DateCreated.ToString("yyyy-MM-dd")@(string.IsNullOrWhiteSpace(room.CreatedBy) ? "" : $" · {room.CreatedBy}")
+                        @if (room.DateModified is not null)
+                        {
+                            <br />
+                            @:Modified @room.DateModified.Value.ToString("yyyy-MM-dd")@(string.IsNullOrWhiteSpace(room.ModifiedBy) ? "" : $" · {room.ModifiedBy}")
+                        }
+                    </div>
+                    <div class="mgmt-room-card-actions">
+                        <button type="button" class="mgmt-btn mgmt-btn-edit btn-edit-room"
+                                data-newid="@room.NewID"
+                                data-roomtype="@room.RoomTypeName"
+                                data-description="@room.Description"
+                                data-pricerate="@room.PriceRate"
+                                data-term="@room.Term"
+                                data-beds="@room.Beds"
+                                data-pax="@room.Pax"
+                                data-roomsavailable="@room.RoomsAvailable"
+                                data-dateavailable="@(room.DateAvailable?.ToString("yyyy-MM-dd"))"
+                                data-discount="@room.Discount">
+                            Edit
+                        </button>
+                        <form method="post" asp-page-handler="Toggle" class="mgmt-room-card-toggle-form">
+                            <input type="hidden" name="newId" value="@room.NewID" />
+                            <input type="hidden" name="makeActive" value="@(room.IsActive ? "false" : "true")" />
+                            <button type="submit" class="mgmt-btn @(room.IsActive ? "mgmt-btn-disapprove" : "mgmt-btn-approve")">
+                                @(room.IsActive ? "Deactivate" : "Activate")
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<div class="mgmt-modal" id="add-room-modal">
+    <div class="mgmt-modal-panel">
+        <button type="button" class="booking-modal-close mgmt-modal-close" data-close-modal="add-room-modal" aria-label="Close">&times;</button>
+        <h3 class="mgmt-subheading">Add a room type</h3>
+        <form method="post" asp-page-handler="Add" enctype="multipart/form-data">
+            <div class="mgmt-form-grid">
+                <label class="mgmt-field">Room type
+                    <input asp-for="NewRoom.RoomType" type="text" list="room-type-options" placeholder="e.g. Solo Room, Ladies Dorm" />
+                    <datalist id="room-type-options">
+                        <option value="Solo Room"></option>
+                        <option value="Ladies Dorm"></option>
+                    </datalist>
+                    <span asp-validation-for="NewRoom.RoomType" class="mgmt-field-error"></span>
+                </label>
+                <label class="mgmt-field mgmt-field-full">Description
+                    <textarea asp-for="NewRoom.Description" rows="2" placeholder="Shown on the public site's room card, e.g. &quot;A private room with two beds, air-conditioning and warm furnishings.&quot;"></textarea>
+                    <span asp-validation-for="NewRoom.Description" class="mgmt-field-error"></span>
+                </label>
+                <label class="mgmt-field mgmt-field-full">Photos
+                    <input asp-for="NewRoom.Photos" type="file" multiple accept="image/jpeg,image/png,image/webp" />
+                    <span class="mgmt-field-hint">Up to @Model.MaxPhotosPerRoomType photos, JPG/PNG/WEBP, 5 MB each.</span>
+                </label>
+                <label class="mgmt-field">Price rate
+                    <input asp-for="NewRoom.PriceRate" type="number" min="0" step="0.01" />
+                    <span asp-validation-for="NewRoom.PriceRate" class="mgmt-field-error"></span>
+                </label>
+                <label class="mgmt-field">Term
+                    <select asp-for="NewRoom.Term">
+                        <option value="Short Term">Short Term</option>
+                        <option value="Long Term">Long Term</option>
+                    </select>
+                </label>
+                <label class="mgmt-field">Beds
+                    <input asp-for="NewRoom.Beds" type="number" min="1" />
+                    <span asp-validation-for="NewRoom.Beds" class="mgmt-field-error"></span>
+                </label>
+                <label class="mgmt-field">Pax
+                    <input asp-for="NewRoom.Pax" type="number" min="1" />
+                    <span asp-validation-for="NewRoom.Pax" class="mgmt-field-error"></span>
+                </label>
+                <label class="mgmt-field">Rooms available
+                    <input asp-for="NewRoom.RoomsAvailable" type="number" min="0" />
+                    <span asp-validation-for="NewRoom.RoomsAvailable" class="mgmt-field-error"></span>
+                </label>
+                <label class="mgmt-field">Date available
+                    <input asp-for="NewRoom.DateAvailable" type="date" />
+                </label>
+                <label class="mgmt-field">Discount (%)
+                    <input asp-for="NewRoom.Discount" type="number" min="0" max="100" step="0.01" />
+                    <span asp-validation-for="NewRoom.Discount" class="mgmt-field-error"></span>
+                </label>
+            </div>
+            <button type="submit" class="mgmt-btn mgmt-btn-approve" style="margin-top: 16px;">Add Room Type</button>
+        </form>
+    </div>
+</div>
+
+<div class="mgmt-modal" id="edit-room-modal">
+    <div class="mgmt-modal-panel">
+        <button type="button" class="booking-modal-close mgmt-modal-close" data-close-modal="edit-room-modal" aria-label="Close">&times;</button>
+        <h3 class="mgmt-subheading">Edit room type</h3>
+        <form method="post" asp-page-handler="Edit">
+            <input asp-for="EditRoom.NewID" type="hidden" id="edit-room-newid" />
+            <div class="mgmt-form-grid">
+                <label class="mgmt-field">Room type
+                    <input asp-for="EditRoom.RoomType" type="text" id="edit-room-roomtype" />
+                    <span asp-validation-for="EditRoom.RoomType" class="mgmt-field-error"></span>
+                </label>
+                <label class="mgmt-field mgmt-field-full">Description
+                    <textarea asp-for="EditRoom.Description" rows="2" id="edit-room-description" placeholder="Shown on the public site's room card"></textarea>
+                    <span asp-validation-for="EditRoom.Description" class="mgmt-field-error"></span>
+                </label>
+                <label class="mgmt-field">Price rate
+                    <input asp-for="EditRoom.PriceRate" type="number" min="0" step="0.01" id="edit-room-pricerate" />
+                    <span asp-validation-for="EditRoom.PriceRate" class="mgmt-field-error"></span>
+                </label>
+                <label class="mgmt-field">Term
+                    <select asp-for="EditRoom.Term" id="edit-room-term">
+                        <option value="Short Term">Short Term</option>
+                        <option value="Long Term">Long Term</option>
+                    </select>
+                </label>
+                <label class="mgmt-field">Beds
+                    <input asp-for="EditRoom.Beds" type="number" min="1" id="edit-room-beds" />
+                    <span asp-validation-for="EditRoom.Beds" class="mgmt-field-error"></span>
+                </label>
+                <label class="mgmt-field">Pax
+                    <input asp-for="EditRoom.Pax" type="number" min="1" id="edit-room-pax" />
+                    <span asp-validation-for="EditRoom.Pax" class="mgmt-field-error"></span>
+                </label>
+                <label class="mgmt-field">Rooms available
+                    <input asp-for="EditRoom.RoomsAvailable" type="number" min="0" id="edit-room-roomsavailable" />
+                    <span asp-validation-for="EditRoom.RoomsAvailable" class="mgmt-field-error"></span>
+                </label>
+                <label class="mgmt-field">Date available
+                    <input asp-for="EditRoom.DateAvailable" type="date" id="edit-room-dateavailable" />
+                </label>
+                <label class="mgmt-field">Discount (%)
+                    <input asp-for="EditRoom.Discount" type="number" min="0" max="100" step="0.01" id="edit-room-discount" />
+                    <span asp-validation-for="EditRoom.Discount" class="mgmt-field-error"></span>
+                </label>
+            </div>
+            <button type="submit" class="mgmt-btn mgmt-btn-approve" style="margin-top: 16px;">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            function openModal(modal) { modal.classList.add('is-open'); }
+            function closeModal(modal) { modal.classList.remove('is-open'); }
+
+            document.querySelectorAll('[data-close-modal]').forEach((btn) => {
+                btn.addEventListener('click', () => closeModal(document.getElementById(btn.dataset.closeModal)));
+            });
+
+            document.querySelectorAll('.mgmt-modal').forEach((modal) => {
+                modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(modal); });
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key !== 'Escape') return;
+                document.querySelectorAll('.mgmt-modal.is-open').forEach(closeModal);
+            });
+
+            const addBtn = document.getElementById('open-add-room');
+            const addModal = document.getElementById('add-room-modal');
+            if (addBtn && addModal) addBtn.addEventListener('click', () => openModal(addModal));
+
+            const editModal = document.getElementById('edit-room-modal');
+            document.querySelectorAll('.btn-edit-room').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    document.getElementById('edit-room-newid').value = btn.dataset.newid;
+                    document.getElementById('edit-room-roomtype').value = btn.dataset.roomtype;
+                    document.getElementById('edit-room-description').value = btn.dataset.description || '';
+                    document.getElementById('edit-room-pricerate').value = btn.dataset.pricerate;
+                    document.getElementById('edit-room-term').value = btn.dataset.term;
+                    document.getElementById('edit-room-beds').value = btn.dataset.beds;
+                    document.getElementById('edit-room-pax').value = btn.dataset.pax;
+                    document.getElementById('edit-room-roomsavailable').value = btn.dataset.roomsavailable;
+                    document.getElementById('edit-room-dateavailable').value = btn.dataset.dateavailable || '';
+                    document.getElementById('edit-room-discount').value = btn.dataset.discount;
+                    openModal(editModal);
+                });
+            });
+        })();
+    </script>
+}

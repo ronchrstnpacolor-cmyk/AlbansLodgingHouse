@@ -1,0 +1,21 @@
+@{
+    Layout = "_Layout";
+    var currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+}
+<div class="mgmt-shell">
+    <aside class="mgmt-sidebar">
+        <div class="mgmt-sidebar-brand">
+            Alban's
+            <span>Management</span>
+        </div>
+        <nav class="mgmt-sidebar-nav">
+            <a href="/Management" class="mgmt-sidebar-link @(currentPage == "/Management/Index" ? "is-active" : "")">Dashboard</a>
+            <a href="/Management/Bookings" class="mgmt-sidebar-link @(currentPage == "/Management/Bookings" ? "is-active" : "")">Bookings</a>
+            <a href="/Management/Rooms" class="mgmt-sidebar-link @(currentPage == "/Management/Rooms" ? "is-active" : "")">Rooms</a>
+        </nav>
+    </aside>
+    <main class="mgmt-content">
+        @RenderBody()
+    </main>
+</div>
+@await RenderSectionAsync("Scripts", required: false)

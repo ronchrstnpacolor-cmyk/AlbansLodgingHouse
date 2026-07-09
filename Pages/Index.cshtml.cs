@@ -1,4 +1,6 @@
+using AlbansLodgingHouse.Data;
 using AlbansLodgingHouse.Models;
+using AlbansLodgingHouse.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -11,7 +13,7 @@ public record Testimonial(string Quote, string Author);
 public record RoomListing(
     string Category,
     string Badge,
-    string Image,
+    string[] Images,
     string Title,
     string Description,
     string[] Features,
@@ -30,11 +32,31 @@ public record ReservationContact(string Carrier, string Number, string TelHref);
 public class IndexModel : PageModel
 {
     private readonly ILogger<IndexModel> _logger;
+    private readonly BookingRepository _bookingRepository;
+    private readonly QrCodeService _qrCodeService;
+    private readonly BookingNotificationService _notificationService;
+    private readonly RoomTypeRepository _roomTypeRepository;
+    private readonly RoomTypeImageRepository _roomTypeImageRepository;
 
-    public IndexModel(ILogger<IndexModel> logger)
+    public IndexModel(
+        ILogger<IndexModel> logger,
+        BookingRepository bookingRepository,
+        QrCodeService qrCodeService,
+        BookingNotificationService notificationService,
+        RoomTypeRepository roomTypeRepository,
+        RoomTypeImageRepository roomTypeImageRepository)
     {
         _logger = logger;
+        _bookingRepository = bookingRepository;
+        _qrCodeService = qrCodeService;
+        _notificationService = notificationService;
+        _roomTypeRepository = roomTypeRepository;
+        _roomTypeImageRepository = roomTypeImageRepository;
     }
+
+    private IReadOnlyDictionary<Guid, List<RoomTypeImage>> _roomImages = new Dictionary<Guid, List<RoomTypeImage>>();
+
+    public IReadOnlyList<RoomType> ActiveRoomTypes { get; set; } = Array.Empty<RoomType>();
 
     [BindProperty]
     public ReservationRequest Reservation { get; set; } = new();
@@ -69,7 +91,7 @@ public class IndexModel : PageModel
         new RoomListing(
             "private",
             "Private",
-            "img/room-twin.jpg",
+            new[] { "img/room-twin.jpg" },
             "Private Twin / Double Room",
             "A private room with two beds, air-conditioning and warm furnishings — ideal for business travelers or couples.",
             new[] { "2 beds", "Aircon", "Private" },
@@ -77,12 +99,50 @@ public class IndexModel : PageModel
         new RoomListing(
             "ladies",
             "Ladies Only",
-            "img/dorm-green.jpg",
+            new[] { "img/dorm-green.jpg" },
             "Ladies' Dormitory",
             "A women-only dormitory that accommodates 5 bed spacers per room, each with an individual locker and key. Refrigerator and gas range in the kitchen, cable TV in the living room.",
             new[] { "Women only", "5 bed spacers", "Locker + key", "Kitchen" },
             "₱1,000 / month"),
     };
+
+    public IReadOnlyList<RoomListing> DisplayRooms =>
+        ActiveRoomTypes.Count > 0 ? ActiveRoomTypes.Select(ToRoomListing).ToList() : Rooms;
+
+    private RoomListing ToRoomListing(RoomType room)
+    {
+        var isLadies = room.RoomTypeName.Contains("ladies", StringComparison.OrdinalIgnoreCase)
+            || room.RoomTypeName.Contains("dorm", StringComparison.OrdinalIgnoreCase);
+
+        var category = isLadies ? "ladies" : "private";
+        var badge = isLadies ? "Ladies Only" : "Private";
+        var fallbackImage = isLadies ? "img/dorm-green.jpg" : "img/room-twin.jpg";
+
+        var images = _roomImages.TryGetValue(room.NewID, out var uploaded) && uploaded.Count > 0
+            ? uploaded.Select(i => i.ImagePath).ToArray()
+            : new[] { fallbackImage };
+
+        var features = new List<string>
+        {
+            room.Beds == 1 ? "1 bed" : $"{room.Beds} beds",
+            room.Pax == 1 ? "1 guest" : $"Up to {room.Pax} guests",
+            room.Term,
+        };
+        if (room.Discount > 0)
+        {
+            features.Add($"{room.Discount:N0}% off");
+        }
+
+        var description = !string.IsNullOrWhiteSpace(room.Description)
+            ? room.Description
+            : isLadies
+                ? $"A women-only dormitory with {room.Beds} bed spacer{(room.Beds == 1 ? "" : "s")}, individual lockers, and access to the shared kitchen and cable-TV living room."
+                : $"A private room with {room.Beds} bed{(room.Beds == 1 ? "" : "s")}, air-conditioning and warm furnishings — accommodates up to {room.Pax} guest{(room.Pax == 1 ? "" : "s")}.";
+
+        var price = $"₱{room.PriceRate:N0} / {room.Term}";
+
+        return new RoomListing(category, badge, images, room.RoomTypeName, description, features.ToArray(), price);
+    }
 
     public IReadOnlyList<WhyItem> WhyChooseUs { get; } = new[]
     {
@@ -151,11 +211,14 @@ public class IndexModel : PageModel
         new ReservationContact("Globe", "927-289-0449", "tel:+639272890449"),
     };
 
-    public void OnGet()
+    public async Task OnGetAsync()
     {
+        var activeRoomTypes = await _roomTypeRepository.GetActiveAsync();
+        ActiveRoomTypes = activeRoomTypes.Where(r => r.RoomsAvailable > 0).ToList();
+        _roomImages = await _roomTypeImageRepository.GetForRoomTypesAsync(ActiveRoomTypes.Select(r => r.NewID));
     }
 
-    public IActionResult OnPostReservation()
+    public async Task<IActionResult> OnPostReservation()
     {
         if (!ModelState.IsValid)
         {
@@ -168,8 +231,19 @@ public class IndexModel : PageModel
             return BadRequest(new { ok = false, errors });
         }
 
+        var booking = await _bookingRepository.InsertBookingAsync(
+            Reservation.Name,
+            Reservation.Phone,
+            Reservation.Email,
+            Reservation.CheckIn,
+            Reservation.CheckOut,
+            Reservation.Room,
+            Reservation.Guests,
+            Reservation.Message);
+
         _logger.LogInformation(
-            "Reservation request received from {Name} ({Contact}) for {Room}, {CheckIn:yyyy-MM-dd} to {CheckOut:yyyy-MM-dd}, {Guests} guest(s).",
+            "Reservation {BookingReferenceNo} received from {Name} ({Contact}) for {Room}, {CheckIn:yyyy-MM-dd} to {CheckOut:yyyy-MM-dd}, {Guests} guest(s).",
+            booking.BookingReferenceNo,
             Reservation.Name,
             string.IsNullOrWhiteSpace(Reservation.Email) ? Reservation.Phone : Reservation.Email,
             string.IsNullOrWhiteSpace(Reservation.Room) ? "unspecified room" : Reservation.Room,
@@ -177,10 +251,23 @@ public class IndexModel : PageModel
             Reservation.CheckOut,
             Reservation.Guests);
 
+        var managementUrl = Url.Page("/Management/Bookings", null, null, Request.Scheme, Request.Host.Value) ?? "";
+        await _notificationService.NotifyManagementNewBookingAsync(booking, managementUrl);
+
+        var qrText = QrCodeService.BuildBookingQrText(booking);
+
         return new JsonResult(new
         {
             ok = true,
             message = "Thank you — request received. We'll confirm your stay shortly.",
+            bookingReferenceNo = booking.BookingReferenceNo,
+            newId = booking.NewID,
+            fullName = booking.FullName,
+            checkIn = booking.CheckIn?.ToString("yyyy-MM-dd"),
+            checkOut = booking.CheckOut?.ToString("yyyy-MM-dd"),
+            roomType = booking.RoomType,
+            pax = booking.Pax,
+            qrCodeDataUri = _qrCodeService.GeneratePngDataUri(qrText),
         });
     }
 }

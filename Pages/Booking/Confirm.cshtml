@@ -1,0 +1,25 @@
+@page "{newId:guid}"
+@model AlbansLodgingHouse.Pages.Booking.ConfirmModel
+@{
+    ViewData["Title"] = "Booking Confirmation";
+}
+
+<div class="thank-you" style="max-width: 560px; margin: 0 auto; padding: 80px 20px;">
+    <div class="thank-you-icon">@(Model.ResultIsError ? "!" : "✓")</div>
+    <h3 class="thank-you-title">@(Model.ResultIsError ? "Unable to confirm" : "Thank you!")</h3>
+    <p class="thank-you-copy">@Model.ResultMessage</p>
+
+    @if (Model.Booking is not null)
+    {
+        <dl class="thank-you-summary" style="margin-top: 26px; justify-content: center;">
+            <div><dt>Booking Ref</dt><dd>@Model.Booking.BookingReferenceNo</dd></div>
+            <div><dt>Name</dt><dd>@Model.Booking.FullName</dd></div>
+            <div><dt>Check-in</dt><dd>@(Model.Booking.CheckIn?.ToString("yyyy-MM-dd") ?? "-")</dd></div>
+            <div><dt>Check-out</dt><dd>@(Model.Booking.CheckOut?.ToString("yyyy-MM-dd") ?? "-")</dd></div>
+            <div><dt>Room Type</dt><dd>@(Model.Booking.RoomType ?? "-")</dd></div>
+            <div><dt>Pax</dt><dd>@Model.Booking.Pax</dd></div>
+        </dl>
+    }
+
+    <p style="margin-top: 30px;"><a href="/">Back to Alban's Lodging House</a></p>
+</div>

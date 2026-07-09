@@ -1,0 +1,23 @@
+@page
+@model AlbansLodgingHouse.Pages.Management.IndexModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="mgmt-page">
+    <header class="mgmt-header">
+        <h1>Dashboard</h1>
+        <p>Welcome back. Here's a quick overview.</p>
+    </header>
+
+    <div class="mgmt-stats">
+        <a href="/Management/Bookings" class="mgmt-stat-tile">
+            <div class="mgmt-stat-value">@Model.NewBookingsCount</div>
+            <div class="mgmt-stat-label">New booking request@(Model.NewBookingsCount == 1 ? "" : "s")</div>
+        </a>
+        <a href="/Management/Rooms" class="mgmt-stat-tile">
+            <div class="mgmt-stat-value">@Model.ActiveRoomTypesCount</div>
+            <div class="mgmt-stat-label">Active room type@(Model.ActiveRoomTypesCount == 1 ? "" : "s")</div>
+        </a>
+    </div>
+</div>

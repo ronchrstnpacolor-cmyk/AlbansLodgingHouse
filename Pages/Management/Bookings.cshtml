@@ -1,0 +1,120 @@
+@page
+@model AlbansLodgingHouse.Pages.Management.BookingsModel
+@{
+    ViewData["Title"] = "Booking Management";
+}
+
+<div class="mgmt-page">
+    <header class="mgmt-header">
+        <h1>Booking Requests</h1>
+        <p>Review reservation requests, track approvals, and mark guests as checked out.</p>
+    </header>
+
+    @if (!string.IsNullOrEmpty(Model.StatusMessage))
+    {
+        <div class="mgmt-alert @(Model.StatusIsError ? "mgmt-alert-error" : "mgmt-alert-success")">
+            @Model.StatusMessage
+        </div>
+    }
+
+    <div class="mgmt-chip-bar" id="booking-status-filters">
+        <button class="chip is-active" data-filter="all" type="button">All</button>
+        <button class="chip" data-filter="New" type="button">New</button>
+        <button class="chip" data-filter="Approved" type="button">Approved</button>
+        <button class="chip" data-filter="Confirmed" type="button">Confirmed</button>
+        <button class="chip" data-filter="Completed" type="button">Completed</button>
+        <button class="chip" data-filter="Disapproved" type="button">Disapproved</button>
+    </div>
+
+    @if (Model.Bookings.Count == 0)
+    {
+        <p class="mgmt-empty">No bookings yet.</p>
+    }
+    else
+    {
+        <div class="mgmt-table-wrap">
+            <table class="mgmt-table">
+                <thead>
+                    <tr>
+                        <th>Booking Ref</th>
+                        <th>Guest</th>
+                        <th>Contact</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Room Type</th>
+                        <th>Pax</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var booking in Model.Bookings)
+                    {
+                        <tr data-status="@booking.Status">
+                            <td>@booking.BookingReferenceNo</td>
+                            <td>@booking.FullName</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(booking.PhoneNo)) { <div>@booking.PhoneNo</div> }
+                                @if (!string.IsNullOrWhiteSpace(booking.Email)) { <div>@booking.Email</div> }
+                            </td>
+                            <td>@(booking.CheckIn?.ToString("yyyy-MM-dd") ?? "-")</td>
+                            <td>@(booking.CheckOut?.ToString("yyyy-MM-dd") ?? "-")</td>
+                            <td>@(booking.RoomType ?? "-")</td>
+                            <td>@booking.Pax</td>
+                            <td><span class="status-badge status-badge-@(booking.Status.ToLowerInvariant())">@booking.Status</span></td>
+                            <td>@booking.DateCreated.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>
+                                @if (booking.Status == "New")
+                                {
+                                    <form method="post" class="mgmt-decision-form">
+                                        <input type="hidden" name="Decision.BookingReferenceNo" value="@booking.BookingReferenceNo" />
+                                        <textarea name="Decision.Remarks" placeholder="Remarks (required if disapproving)" rows="2" class="mgmt-input"></textarea>
+                                        <div class="mgmt-decision-actions">
+                                            <button type="submit" name="Decision.Status" value="Approved" class="mgmt-btn mgmt-btn-approve">Approve</button>
+                                            <button type="submit" name="Decision.Status" value="Disapproved" class="mgmt-btn mgmt-btn-disapprove">Disapprove</button>
+                                        </div>
+                                    </form>
+                                }
+                                else if (booking.Status == "Approved" || booking.Status == "Confirmed")
+                                {
+                                    <form method="post" asp-page-handler="Checkout">
+                                        <input type="hidden" name="newId" value="@booking.NewID" />
+                                        <button type="submit" class="mgmt-btn mgmt-btn-approve">Mark Checked Out</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="mgmt-muted">&mdash;</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const filterBar = document.getElementById('booking-status-filters');
+            if (!filterBar) return;
+
+            const chips = filterBar.querySelectorAll('.chip');
+            const rows = document.querySelectorAll('tr[data-status]');
+
+            chips.forEach((chip) => {
+                chip.addEventListener('click', () => {
+                    const filter = chip.dataset.filter;
+                    chips.forEach((c) => c.classList.toggle('is-active', c === chip));
+                    rows.forEach((row) => {
+                        const show = filter === 'all' || row.dataset.status === filter;
+                        row.style.display = show ? '' : 'none';
+                    });
+                });
+            });
+        })();
+    </script>
+}

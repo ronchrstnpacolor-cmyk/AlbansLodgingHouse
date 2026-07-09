@@ -33,7 +33,10 @@
         <p class="hero-copy">Clean, air-conditioned rooms for business travelers, transients and long-stay guests &mdash; steps from the town center, banks and DMMMSU.</p>
         <div class="hero-actions">
             <a href="#rooms" class="btn btn-primary">Book Your Stay</a>
-            <a href="tel:+639298451276" class="btn btn-outline">Call +63 929 845 1276</a>
+            <a href="https://maps.app.goo.gl/2XVPepqGwUsTBSXU9" target="_blank" rel="noopener" class="btn btn-outline btn-icon">
+                <svg width="14" height="18" viewBox="0 0 24 30" fill="none" aria-hidden="true"><path d="M12 1C6 1 1.5 5.5 1.5 11.3 1.5 19 12 29 12 29S22.5 19 22.5 11.3C22.5 5.5 18 1 12 1Z" fill="currentColor" /><circle cx="12" cy="11.5" r="4" fill="#22392F" /></svg>
+                Get Directions
+            </a>
         </div>
         <div class="rating">
             <span class="stars">&#9733;&#9733;&#9733;&#9733;&#9734;</span>
@@ -111,7 +114,14 @@
                 </div>
 
                 <div class="biz-card-divider"></div>
-                <div class="biz-card-badge"><span>WiFi</span><small>FREE</small></div>
+                <div class="biz-card-badge">
+                    <svg width="20" height="16" viewBox="0 0 24 20" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="17.5" r="1.6" fill="#fff" />
+                        <path d="M6.5 12.8a7.8 7.8 0 0 1 11 0" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none" />
+                        <path d="M2.5 8.8a13.6 13.6 0 0 1 19 0" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none" />
+                    </svg>
+                    <small>FREE</small>
+                </div>
 
                 <div class="biz-card-bottom biz-card-bottom-dark">
                     <div class="biz-card-icon-line">
@@ -121,7 +131,7 @@
                     <div class="biz-card-row">
                         <span>PLDT NO. 72-607-2696</span>
                         <span class="biz-card-icon-line">
-                            <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true"><rect x="5" y="1" width="12" height="20" rx="2" fill="#F0C93A" /></svg>
+                            <svg width="11" height="17" viewBox="0 0 14 22" fill="none" aria-hidden="true"><rect x="1" y="1" width="12" height="20" rx="2.5" stroke="#F0C93A" stroke-width="1.6" /><line x1="1" y1="16.5" x2="13" y2="16.5" stroke="#F0C93A" stroke-width="1.4" /><circle cx="7" cy="18.7" r="0.9" fill="#F0C93A" /></svg>
                             Smart 929-845-1276
                         </span>
                     </div>
@@ -164,7 +174,7 @@
         <div class="section-head">
             <div class="eyebrow">Accommodations</div>
             <h2 class="section-title">Rooms &amp; Dormitories</h2>
-            <p class="rooms-subtitle">Room rates from &#8369;1,000 to &#8369;2,500 per night, depending on occupancy &mdash; free breakfast included with every stay.</p>
+            <p class="rooms-subtitle">Room rates start at &#8369;1,000, depending on occupancy &mdash; free breakfast included with every stay.</p>
         </div>
 
         <div class="room-filters" id="room-filters">
@@ -174,13 +184,24 @@
         </div>
 
         <div class="room-grid">
-            @foreach (var room in Model.Rooms)
+            @foreach (var room in Model.DisplayRooms)
             {
                 <div class="room-card-wrap" data-category="@room.Category">
                     <article class="room-card">
-                        <div class="room-media">
-                            <img src="@room.Image" alt="@room.Title" loading="lazy" />
+                        <div class="room-media" data-images="@System.Text.Json.JsonSerializer.Serialize(room.Images)">
+                            <img src="@room.Images[0]" alt="@room.Title" loading="lazy" class="room-media-img" />
                             <span class="room-badge room-badge-@room.Category">@room.Badge</span>
+                            @if (room.Images.Length > 1)
+                            {
+                                <button type="button" class="room-media-nav room-media-prev" aria-label="Previous photo">&lsaquo;</button>
+                                <button type="button" class="room-media-nav room-media-next" aria-label="Next photo">&rsaquo;</button>
+                                <div class="room-media-dots">
+                                    @for (var i = 0; i < room.Images.Length; i++)
+                                    {
+                                        <span class="room-media-dot @(i == 0 ? "is-active" : "")"></span>
+                                    }
+                                </div>
+                            }
                         </div>
                         <div class="room-body">
                             <h3 class="room-title">@room.Title</h3>
@@ -387,9 +408,20 @@
                             <label class="field">Room type
                                 <select asp-for="Reservation.Room" id="room-select">
                                     <option value="">Select&hellip;</option>
-                                    @foreach (var room in Model.Rooms)
+                                    @if (Model.ActiveRoomTypes.Count > 0)
                                     {
-                                        <option value="@room.Title">@room.Title</option>
+                                        @foreach (var roomType in Model.ActiveRoomTypes)
+                                        {
+                                            var label = $"{roomType.RoomTypeName} — ₱{roomType.PriceRate:N0} ({roomType.Term}{(roomType.Discount > 0 ? $", {roomType.Discount:N0}% off" : "")})";
+                                            <option value="@roomType.RoomTypeName">@label</option>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        @foreach (var room in Model.Rooms)
+                                        {
+                                            <option value="@room.Title">@room.Title</option>
+                                        }
                                     }
                                 </select>
                             </label>
@@ -410,11 +442,6 @@
                         </button>
                     </div>
                 </form>
-                <div class="thank-you" id="thank-you" hidden>
-                    <div class="thank-you-icon">&#10003;</div>
-                    <h3 class="thank-you-title">Thank you &mdash; request received</h3>
-                    <p class="thank-you-copy" id="thank-you-message">We'll confirm your stay shortly. For a faster reply, call or text us at <a href="tel:+639298451276">+63 929 845 1276</a>.</p>
-                </div>
             </div>
 
             <div class="contact-details">
@@ -474,5 +501,29 @@
     <div class="lightbox-figure">
         <img id="lightbox-image" src="" alt="" />
         <div class="lightbox-caption" id="lightbox-caption"></div>
+    </div>
+</div>
+
+<div class="booking-modal" id="booking-modal">
+    <div class="booking-modal-panel" role="dialog" aria-modal="true" aria-labelledby="booking-modal-title">
+        <button type="button" class="booking-modal-close" id="booking-modal-close" aria-label="Close">&times;</button>
+        <div class="thank-you-icon">&#10003;</div>
+        <h3 class="thank-you-title" id="booking-modal-title">Request received &mdash; awaiting approval</h3>
+        <p class="thank-you-copy">Your reservation request has been received and is awaiting review by our management team. You'll receive an email as soon as it's approved.</p>
+        <div class="thank-you-booking">
+            <img class="thank-you-qr" id="thank-you-qr" alt="Booking QR code" />
+            <dl class="thank-you-summary" id="thank-you-summary">
+                <div><dt>Booking Ref</dt><dd id="summary-ref"></dd></div>
+                <div><dt>Name</dt><dd id="summary-name"></dd></div>
+                <div><dt>Check-in</dt><dd id="summary-checkin"></dd></div>
+                <div><dt>Check-out</dt><dd id="summary-checkout"></dd></div>
+                <div><dt>Room Type</dt><dd id="summary-room"></dd></div>
+                <div><dt>Pax</dt><dd id="summary-pax"></dd></div>
+            </dl>
+        </div>
+        <div class="booking-modal-actions">
+            <a class="btn btn-outline" id="booking-modal-download" href="#" download>Save as JPEG</a>
+            <button type="button" class="btn btn-primary" id="booking-modal-ok">Done</button>
+        </div>
     </div>
 </div>
